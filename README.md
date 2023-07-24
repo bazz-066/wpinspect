@@ -1,54 +1,83 @@
-![alt text](https://raw.githubusercontent.com/webarx-security/wpbullet/dev/screenshots/1.png "Logo Title Text 1")
-
-
-
-# wpBullet [![Build Status](https://travis-ci.org/webarx-security/wpbullet.svg?branch=dev)](https://travis-ci.org/webarx-security/wpbullet) [![Python 2.x|3.x](https://img.shields.io/badge/python-3.x-yellow.svg)](https://www.python.org/) [![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](https://github.com/webarx-security/wpbullet/blob/dev/LICENSE)
-A static code analysis for WordPress Plugins/Themes (and PHP)
-
+# wpInspect [![Python 2.x|3.x](https://img.shields.io/badge/python-3.x-yellow.svg)](https://www.python.org/)
+wpInspect is a tool for static code analysis on WordPress plugins and wordpress themes developed from OWASP's wpBullet tool
 
 ## Installation
 Simply clone the repository, install requirements and run the script 
-- `$ git clone https://github.com/webarx-security/wpbullet wpbullet` 
-- `$ cd wpbullet`
+- `$ git clone https://github.com/bazz-066/wpinspect` 
+- `$ cd wpinspect`
 - `$ pip install -r requirements.txt`
-- `$ python wpbullet.py`
+- `$ python3 wpinspect.py`
 
 
 ## Usage
 Available options:
-```
---path (required) System path or download URL 
-Examples:
---path="/path/to/plugin"
---path="https://wordpress.org/plugins/example-plugin"
---path="https://downloads.wordpress.org/plugin/example-plugin.1.5.zip"
 
---enabled (optional) Check only for given modules, ex. --enabled="SQLInjection,CrossSiteScripting"
---disabled (optional) Don't check for given modules, ex. --disabled="SQLInjection,CrossSiteScripting"
---cleanup (optional) Automatically remove content of .temp folder after scanning remotely downloaded plugin (boolean)
---report (optional) Saves result inside reports/ directory in JSON format (boolean)
+* `--path` option
 
-$ python wpbullet.py --path="/var/www/wp-content/plugins/plugin-name"
-```
+    To determine the WordPress plugins or themes that will be scanned
 
-## Creating modules
-Creating a module is flexible and allows for override of the `BaseClass` methods for each module as well as creating their own methods
+    There are 3 ways to determine which plugins / themes to check:
 
-Each module in `Modules` directory is implementing properties and methods from `core.modules.BaseClass`,
-thus each module's required parameter is `BaseClass`
+    ```
+    --path="/path/to/plugin"
+    --path="https://wordpress.org/plugins/example-plugin"
+    --path="https://downloads.wordpress.org/plugin/example-plugin.1.5.zip"
+    ```
 
-Once created, module needs to be imported in `modules/__init__.py`. Module and class name must be consistent
-in order to module to be loaded.
+    Example:
 
-__If you are opening pull request to add new module, please provide unit tests for your module as well.__
+    ```
+    $ python3 wpinspect.py --path="/var/www/wp-content/plugins/plugin-name"
+    ```
 
+* `--enabled` option (Optional)
+
+    Check only for given modules
+
+    Example:
+
+    ```
+    $ python3 wpinspect.py --path="/var/www/wp-content/plugins/plugin-name" --enabled="OpenRedirect"
+    ```
+
+* `--disabled` option (Optional)
+
+    Don't check for given modules
+
+    Example:
+
+    ```
+    $ python3 wpinspect.py --path="/var/www/wp-content/plugins/plugin-name" --disabled="OpenRedirect"
+    ```
+
+* `--cleanup` option (Optional)
+
+    Automatically remove content of `.temp`` folder after scanning remotely downloaded plugin
+
+    Example:
+
+    ```
+    $ python3 wpinspect.py --path="/var/www/wp-content/plugins/plugin-name" --cleanup 1
+    ```
+
+* `--report` option (Optional)
+
+    Saves result inside `reports/`` directory in JSON format
+
+    Example:
+
+    ```
+    $ python3 wpinspect.py --path="/var/www/wp-content/plugins/plugin-name" --report 1
+    ```
+
+## Modules
+The modules in wpInspect are flexible components that allow users to create their own detection rules for security vulnerabilities in WordPress plugins and themes. The modules in wpInspect are designed to be user-friendly and enable users to create their own modules to detect vulnerabilities in WordPress plugins or themes.
 
 ### Module template
 
 `Modules/ExampleVulnerability.py`
 ```python
 from core.modules import BaseClass
-
 
 class ExampleVulnerability(object):
 
@@ -72,14 +101,13 @@ class ExampleVulnerability(object):
 
 ```
 
-#### Overriding regex match pattern
+### Overriding regex match pattern
 Regex pattern is being generated in `core.modules.BaseClass.build_pattern` and therefore can be overwritten in 
 each module class.
 
 `Modules/ExampleVulnerability.py`
 ```python
 import copy
-
 
 ...
 # Build dynamic regex pattern to locate vulnerabilities in given content
@@ -102,5 +130,9 @@ def build_pattern(self, content, file):
     return pattern
 ```
 
-### Testing
+## Testing
 Running unit tests: `$ python3 -m unittest`
+
+## References
+* https://www.wordfence.com/wp-content/uploads/2021/07/Common-WordPress-Vulnerabilities-and-Prevention-Through-Secure-Coding-Best-Practices.pdf
+* https://wpscan.com/howto-find-wordpress-plugin-vulnerabilities-wpscan-ebook.pdf
